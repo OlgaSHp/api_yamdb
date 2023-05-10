@@ -8,23 +8,37 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = 
-    slug = 
+    name = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Genre(models.Model):
-    name = 
-    slug = 
+    name = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Title(models.Model):
-    name = 
-    year = 
-    category_id = 
+    name = models.CharField(max_length=50)
+    year = models.IntegerField()
+    # вопрос по удалению связанных данных
+    category_id = models.ForeignKey(
+        Category, related_name='titles')
+    genre = models.ManyToManyField(
+        Genre, through='GenreTitle')
+
+    def __str__(self):
+        return self.name
 
 
 class GenreTitle(models.Model):
-    pass
+    title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
 
 
 class Review(models.Model):
