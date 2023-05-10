@@ -1,17 +1,14 @@
 from datetime import timedelta
 from pathlib import Path
 
-import environ
-import os
 
-env = environ.Env()
-environ.Env.read_env()
+import os
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SECRET_KEY = env('SECRET_KEY', default='django-insecure-5&0@zr1-0!8&*%4f1=+&h&^7f^1^_&-7z!6+8*9vy^-z@-0hn')
+SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,7 +27,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_filters',
     'api.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
 ]
