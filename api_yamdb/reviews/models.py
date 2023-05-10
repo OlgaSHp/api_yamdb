@@ -3,22 +3,24 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-
-
 class User(AbstractUser):
     pass
 
 
 class Category(models.Model):
-    pass
+    name = 
+    slug = 
 
 
 class Genre(models.Model):
-    pass
+    name = 
+    slug = 
 
 
 class Title(models.Model):
-    pass
+    name = 
+    year = 
+    category_id = 
 
 
 class GenreTitle(models.Model):
