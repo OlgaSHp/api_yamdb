@@ -1,103 +1,139 @@
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
+from django.core.mail import EmailMessage
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import ValidationError
 
 
 from reviews.models import Category, Genre, Review, Title, User
-from .permissions import (IsAdmin, IsAdminOrReadOnly,
-                          IsAdminModeratorOwnerOrReadOnly)
+from .permissions import (AdminModeratorAuthorPermission, AdminOnly,
+                          IsAdminUserOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReadOnlyTitleSerializer,
-                          RegisterSerializer, ReviewSerializer,
-                          TitleSerializer, TokenSerializer, UserEditSerializer,
-                          UserSerializer)
+                          GenreSerializer, TokenSerializer,
+                          UserNotAdminSerializer, ReviewSerializer,
+                          SignUpSerializer, TitleReadSerializer,
+                          TitleWriteSerializer, UsersSerializer)
 
 
-
-class UserViewSet(viewsets.ModelViewSet):
-    search_fields = ("username",)
+class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAdmin,)
-    http_method_names = ['get', 'post', 'delete', 'patch']
+    serializer_class = UsersSerializer
+    permission_classes = (IsAuthenticated, AdminOnly,)
+    lookup_field = 'username'
+    filter_backends = (SearchFilter, )
+    search_fields = ('username', )
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        search_query = self.request.query_params.get('search')
-        if search_query:
-            queryset = queryset.filter(username__icontains=search_query)
-        return queryset
-    
     @action(
-        methods=[
-            "get",
-            "patch",
-        ],
+        methods=['GET', 'PATCH'],
         detail=False,
-        url_path="me",
-        permission_classes=[permissions.IsAuthenticated],
-        serializer_class=UserEditSerializer,
-    )
-    def my_profile(self, request):
-        user = request.user
-        if request.method == "GET":
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "PATCH":
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
+        permission_classes=(IsAuthenticated,),
+        url_path='me')
+    def get_current_user_info(self, request):
+        """
+        Получение информации о текущем пользователе.
+
+        Если метод запроса PATCH, то проверяется, является ли пользователь администратором.
+        Если пользователь - администратор, используется сериализатор UsersSerializer для
+        обновления информации о текущем пользователе на основе полученных данных.
+        В противном случае используется сериализатор UserNotAdminSerializer для частичного
+        обновления информации о текущем пользователе на основе полученных данных.
+
+        Возвращает сериализированные данные о текущем пользователе или код ответа HTTP 200 OK.
+        """
+        serializer = UsersSerializer(request.user)
+        if request.method == 'PATCH':
+            if request.user.is_admin:
+                serializer = UsersSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True)
+            else:
+                serializer = UserNotAdminSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+        return Response(serializer.data)
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def register(request):
-    serializer = RegisterSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data["username"]
-    )
-    confirmation_code = default_token_generator.make_token(user)
-    
-    send_mail(
-        subject="YaMDb registration",
-        message=f"Your confirmation code: {confirmation_code}",
-        from_email=None,
-        recipient_list=[user.email],
-    )
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+class APIToken(APIView):
+    """
+    Получение JWT-токена в обмен на username и confirmation code.
+    """
+    def post(self, request):
+        """
+        Отправка запроса на получение JWT-токена.
 
-    
+        Проверяет наличие пользователя с указанным username.
+        Если код подтверждения совпадает с кодом пользователя,
+        генерирует и возвращает JWT-токен для пользователя.
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def get_jwt_token(request):
-    serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data["username"]
-    )
+        Возвращает JWT-токен или соответствующий код ответа HTTP.
+        """
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            user = User.objects.get(username=data['username'])
+        except User.DoesNotExist:
+            return Response(
+                {'username': 'Пользователь не найден'},
+                status=status.HTTP_404_NOT_FOUND)
+        if data.get('confirmation_code') == user.confirmation_code:
+            token = RefreshToken.for_user(user).access_token
+            return Response({'token': str(token)},
+                            status=status.HTTP_201_CREATED)
+        return Response(
+            {'confirmation_code': 'Неверный код подтверждения'},
+            status=status.HTTP_400_BAD_REQUEST)
 
-    if default_token_generator.check_token(
-        user, serializer.validated_data["confirmation_code"]
-    ):
-        token = AccessToken.for_user(user)
-        return Response({"token": str(token)}, status=status.HTTP_200_OK)
 
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class APISignup(APIView):
+    """
+    Получение кода подтверждения на электронную почту.
+    """
+    permission_classes = (permissions.AllowAny,)
+
+    @staticmethod
+    def send_email(data):
+        """
+        Отправка электронного письма.
+        """
+        email = EmailMessage(
+            subject=data['email_subject'],
+            body=data['email_body'],
+            to=[data['to_email']]
+        )
+        email.send()
+
+    def post(self, request):
+        """
+        Отправка запроса на получение кода подтверждения.
+        """
+        serializer = SignUpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Проверка на существование электронной почты
+        email = request.data.get('email', None)
+        if email and User.objects.filter(email=email).exists():
+            raise ValidationError({'email': 'Такая электронная почта уже существует'})
+        
+        user = serializer.save()
+        email_body = (
+            f'Добрый день {user.username}.'
+            f'\nВаш код для доступа к API: {user.confirmation_code}'
+        )
+        data = {
+            'email_body': email_body,
+            'to_email': user.email,
+            'email_subject': 'Код подтверждения для доступа к API'
+        }
+        self.send_email(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
