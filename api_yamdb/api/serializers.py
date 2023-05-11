@@ -1,4 +1,44 @@
 from rest_framework import serializers
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+
+
+class UserNotAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        required=True)
+    confirmation_code = serializers.CharField(
+        required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
 
 
 
@@ -21,21 +61,6 @@ class TitleSerializer(serializers.ModelSerializer):
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
     pass
 
-
-class UserSerializer(serializers.ModelSerializer):
-    pass
-
-
-class UserEditSerializer(serializers.ModelSerializer):
-    pass
-
-
-class RegisterDataSerializer(serializers.ModelSerializer):
-    pass
-
-
-class TokenSerializer(serializers.Serializer):
-    pass
 
 
 class CommentSerializer(serializers.ModelSerializer):
