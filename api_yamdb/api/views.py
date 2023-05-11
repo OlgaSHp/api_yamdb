@@ -23,24 +23,7 @@ class GenreViewSet(ListCreateDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     pass
 
-    
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    pass
-
-# @api_view(["POST"])
-# @permission_classes([permissions.AllowAny])
-# def register_user(request):
-# ''' Регистрируем нового пользователя'''
-
-
-# @api_view(["POST"])
-# @permission_classes([permissions.AllowAny])
-# def get_jwt_token(request):
-#     '''Запрашиваем токен'''
-
-
+ 
 class ReviewViewSet(viewsets.ModelViewSet):
     pass
 
