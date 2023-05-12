@@ -11,17 +11,18 @@ class UserAdmin(admin.ModelAdmin):
 , User
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text',  'author', 'review')
-
+    list_display = ('id', 'text', 'author', 'review')
 
 
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('id', 'text', 'author', 'score')
 
 
-
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Genre, GenreAdmin)
+admin.site.register(Title, TitleAdmin)
 admin.site.register(Review, ReviewAdmin)
-admin.site.register(Comment, CommentAdmin)    
+admin.site.register(Comment, CommentAdmin)
 
 
 admin.site.register(User, UserAdmin)
