@@ -8,7 +8,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email')
     list_filter = ('role',)
     empty_value_display = '-пусто-'
-, User
+
 
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('id', 'text', 'author', 'review')
@@ -23,6 +23,4 @@ admin.site.register(Genre, GenreAdmin)
 admin.site.register(Title, TitleAdmin)
 admin.site.register(Review, ReviewAdmin)
 admin.site.register(Comment, CommentAdmin)
-
-
 admin.site.register(User, UserAdmin)
