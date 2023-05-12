@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from reviews.models import Comment, Review, Title
+from reviews.models import Category, Genre, Comment, Review, Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -15,7 +15,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-
     class Meta:
         fields = '__all__'
         model = Review
@@ -23,7 +22,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate_score(self, value):
         if 0 > value > 10:
             raise serializers.ValidationError('Оценка по 10-бальной шкале!')
-        return value    
+        return value
 
     def validate(self, data):
         request = self.context['request']

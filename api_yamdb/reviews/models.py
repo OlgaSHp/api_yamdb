@@ -137,8 +137,6 @@ class Review(models.Model):
 
     def __str__(self):
         return self.text
-    
-    
 
 
 class Comment(models.Model):
@@ -151,7 +149,7 @@ class Comment(models.Model):
     text = models.CharField(
         'техт коментария',
         max_length=200
-        
+
     )
     author = models.ForeignKey(
         User,
@@ -165,6 +163,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Коментарий'
 
     def __str__(self):
-        return self.text    
-
-
+        return self.text
