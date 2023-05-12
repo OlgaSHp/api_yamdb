@@ -16,7 +16,11 @@ class TitleFilter(filters.FilterSet):
         field_name='genre__slug',
         lookup_expression='icontains'
     )
+    year = filters.NumberFilter(
+        field_name='year',
+        lookup_expression='icontains'
+    )
 
     class Meta:
         model = Title
-        fields = ['name', 'genre', 'category']
+        fields = ['name', 'genre', 'category', 'year']
