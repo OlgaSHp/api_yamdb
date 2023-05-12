@@ -4,7 +4,7 @@ from .models import Category, Comment, Genre, Review, Title, User
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'role')
+    list_display = ('username', 'email', 'role', 'confirmation_code')
     search_fields = ('username', 'email')
     list_filter = ('role',)
     empty_value_display = '-пусто-'
