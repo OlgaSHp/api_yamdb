@@ -23,8 +23,8 @@ from .permissions import (IsAdminModeratorOwnerOrReadOnly, IsAdmin,
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, TokenSerializer,
                           UserNotAdminSerializer, ReviewSerializer,
-                          SignUpSerializer, TitleReadSerializer,
-                          TitleWriteSerializer, UsersSerializer,
+                          SignUpSerializer,
+                          UsersSerializer,
                           ReadOnlyTitleSerializer, TitleSerializer)
 
 

@@ -81,25 +81,22 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
                             'description', 'category', 'genre')
 
 
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        validators=[
-            UsernameValidator(),
-            MaxLengthValidator(150),
-            UniqueValidator(queryset=User.objects.all())
-        ],
-        required=True,
-    )
-    email = serializers.EmailField(
-        validators=[
-            MaxLengthValidator(254),
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-
+class UsersSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = "__all__"
         model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+
+
+class UserNotAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+
 
 
 class UserEditSerializer(serializers.ModelSerializer):
@@ -115,30 +112,20 @@ class UserEditSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        validators=[
-            UsernameValidator(),
-            MaxLengthValidator(150),
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-    email = serializers.EmailField(
-        validators=[
-            MaxLengthValidator(254),
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
-
-    def validate_username(self, value):
-        if value.lower() == "me":
-            raise serializers.ValidationError(
-                "Пользователь с именем 'me' не разрешен")
-        return value
-
+class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("username", "email")
         model = User
+        fields = ('email', 'username')
+
+    def to_internal_value(self, data):
+        email = data.get('email')
+        username = data.get('username')
+
+        user = User.objects.filter(email=email, username=username).first()
+        if user:
+            return user
+
+        return super().to_internal_value(data)
 
 
 class TokenSerializer(serializers.Serializer):
