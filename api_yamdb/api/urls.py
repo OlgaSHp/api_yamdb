@@ -6,9 +6,26 @@ from .views import (CategoryViewSet, CommentViewSet, GenreViewSet,
                     register)
 from rest_framework.routers import DefaultRouter
 
+app_name = 'api'
+
 router = DefaultRouter()
 
 router.register(r"users", UserViewSet)
+router.register(
+    'categories',
+    CategoryViewSet,
+    basename='сategories'
+)
+router.register(
+    'titles',
+    TitleViewSet,
+    basename='titles'
+)
+router.register(
+    'genres',
+    GenreViewSet,
+    basename='genres'
+)
 
 urlpatterns = [
     path('v1/', include(router.urls)),
