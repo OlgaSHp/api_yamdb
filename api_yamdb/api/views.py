@@ -8,11 +8,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+from api.filters import TitleFilter
 
 
 from reviews.models import Category, Genre, Review, Title, User
-from .permissions import (AdminModeratorAuthorPermission, AdminOnly,
-                          IsAdminUserOrReadOnly)
+from .permissions import (IsAdminModeratorOwnerOrReadOnly, IsAdmin,
+                          IsAdminOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, TokenSerializer,
                           UserNotAdminSerializer, ReviewSerializer,
@@ -174,3 +176,43 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return ReadOnlyTitleSerializer
         return TitleSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
+
+
+    def get_queryset(self):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
+        return review.comments.all()
+    
+    def perform_create(self, serializer):
+        review = get_object_or_404(
+            Review, 
+            id = self.kwargs('review_id')
+        )
+        serializer.save(author=self.request.user, review=review)
+
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAdminModeratorOwnerOrReadOnly,)
+
+
+    def get_queryset(self):
+        title = get_object_or_404(
+            Title,
+            id = self.kwargs('title_id')
+        )
+        return title.reviews.all()
+    
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
