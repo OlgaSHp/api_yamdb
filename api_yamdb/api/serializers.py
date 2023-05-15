@@ -1,9 +1,5 @@
 from rest_framework import serializers
 
-from rest_framework.validators import UniqueValidator
-from django.core.validators import MaxLengthValidator
-
-from .validators import UsernameValidator
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -99,17 +95,17 @@ class UserNotAdminSerializer(serializers.ModelSerializer):
 
 
 
-class UserEditSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        validators=[UsernameValidator()],
-        max_length=150,
-        required=True
-    )
+# class UserEditSerializer(serializers.ModelSerializer):
+#     username = serializers.CharField(
+#         validators=[UsernameValidator()],
+#         max_length=150,
+#         required=True
+#     )
 
-    class Meta:
-        fields = "__all__"
-        model = User
-        read_only_fields = ('role',)
+#     class Meta:
+#         fields = "__all__"
+#         model = User
+#         read_only_fields = ('role',)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
