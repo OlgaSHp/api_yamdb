@@ -27,7 +27,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = (IsAuthenticated, AdminOnly,)
+    permission_classes = (IsAuthenticated, IsAdmin,)
     lookup_field = 'username'
     filter_backends = (SearchFilter, )
     search_fields = ('username', )
