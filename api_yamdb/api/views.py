@@ -1,4 +1,5 @@
 from django.core.mail import EmailMessage
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -10,13 +11,14 @@ from rest_framework.exceptions import ValidationError
 
 
 from reviews.models import Category, Genre, Review, Title, User
-from .permissions import (IsAdminModeratorOwnerOrReadOnly, IsAdmin,
-                          IsAdminOrReadOnly)
+from .permissions import (AdminModeratorAuthorPermission, AdminOnly,
+                          IsAdminUserOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, TokenSerializer,
                           UserNotAdminSerializer, ReviewSerializer,
                           SignUpSerializer, TitleReadSerializer,
-                          TitleWriteSerializer, UsersSerializer)
+                          TitleWriteSerializer, UsersSerializer,
+                          ReadOnlyTitleSerializer, TitleSerializer)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -67,6 +69,7 @@ class APIToken(APIView):
     """
     Получение JWT-токена в обмен на username и confirmation code.
     """
+
     def post(self, request):
         """
         Отправка запроса на получение JWT-токена.
@@ -119,12 +122,13 @@ class APISignup(APIView):
         """
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Проверка на существование электронной почты
         email = request.data.get('email', None)
         if email and User.objects.filter(email=email).exists():
-            raise ValidationError({'email': 'Такая электронная почта уже существует'})
-        
+            raise ValidationError(
+                {'email': 'Такая электронная почта уже существует'})
+
         user = serializer.save()
         email_body = (
             f'Добрый день {user.username}.'
@@ -137,3 +141,36 @@ class APISignup(APIView):
         }
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoryViewSet(ListCreateDestroyViewSet):
+    '''Получить список всех категорий.'''
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (SearchFilter, )
+    search_fields = ('name', )
+    lookup_field = 'slug'
+
+
+class GenreViewSet(ListCreateDestroyViewSet):
+    '''Получить список всех жанров.'''
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', )
+    lookup_field = 'slug'
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    '''Вьюсет получения, записи и изменения произведений.'''
+    queryset = Title.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
+    permission_classes = (IsAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return ReadOnlyTitleSerializer
+        return TitleSerializer

@@ -46,36 +46,28 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = '__all__'
+        lookup_field = 'slug'
 
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='category')
+        queryset=Category.objects.all(),
+        slug_field='slug')
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         many=True,
-        slug_field='genre')
+        slug_field='slug')
 
     class Meta:
         model = Title
         fields = '__all__'
-
-# Или так:
-
-# class TitleSerializer(serializers.ModelSerializer):
-#     category = CategorySerializer()
-#     genre = GenreSerializer(many=True)
-
-#     class Meta:
-#         model = Title
-#         fields = '__all__'
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
@@ -140,13 +132,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         if value.lower() == "me":
-            raise serializers.ValidationError("Пользователь с именем 'me' не разрешен")
+            raise serializers.ValidationError(
+                "Пользователь с именем 'me' не разрешен")
         return value
 
     class Meta:
         fields = ("username", "email")
         model = User
-
 
 
 class TokenSerializer(serializers.Serializer):
