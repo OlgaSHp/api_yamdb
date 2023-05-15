@@ -130,6 +130,11 @@ class APISignup(APIView):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        user = serializer.validated_data
+
+        if not hasattr(user, 'id'):  # Если пользователь не был найден, сохраняем его
+            user = serializer.save()
+
         # Проверка на существование электронной почты
         email = request.data.get('email', None)
         if email and User.objects.filter(email=email).exists():
