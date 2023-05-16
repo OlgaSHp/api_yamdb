@@ -4,47 +4,44 @@ from .models import Category, Comment, Genre, Review, Title, User
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
-    search_fields = ('name',)
-    list_filter = ('name',)
-    empty_value_display = '-пусто-'
+    list_display = ("name", "slug")
+    search_fields = ("name",)
+    list_filter = ("name",)
+    empty_value_display = "-пусто-"
 
 
 class GenreAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
-    search_fields = ('name',)
-    list_filter = ('name',)
-    empty_value_display = '-пусто-'
+    list_display = ("name", "slug")
+    search_fields = ("name",)
+    list_filter = ("name",)
+    empty_value_display = "-пусто-"
 
 
 class TitleAdmin(admin.ModelAdmin):
     list_display = (
-        'name',
-        'year',
-        'category',
-        'description',
+        "name",
+        "year",
+        "category",
+        "description",
     )
-    search_fields = ('name',)
-    list_filter = ('name',)
-    empty_value_display = '-пусто-'
-
+    search_fields = ("name",)
+    list_filter = ("name",)
+    empty_value_display = "-пусто-"
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'role', 'confirmation_code')
-    search_fields = ('username', 'email')
-    list_filter = ('role',)
-    empty_value_display = '-пусто-'
+    list_display = ("username", "email", "role", "confirmation_code")
+    search_fields = ("username", "email")
+    list_filter = ("role",)
+    empty_value_display = "-пусто-"
 
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'author', 'review')
+    list_display = ("id", "text", "author", "review")
 
 
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'author', 'score')
-
-
+    list_display = ("id", "text", "author", "score")
 
 
 admin.site.register(Category, CategoryAdmin)

@@ -5,21 +5,19 @@ from django.utils import timezone
 
 
 def validate_username(value):
-    if value == 'me':
+    if value == "me":
         raise ValidationError(
-            ('Имя пользователя не может быть <me>.'),
-            params={'value': value},
+            ("Имя пользователя не может быть <me>."),
+            params={"value": value},
         )
-    if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
+    if re.search(r"^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$", value) is None:
         raise ValidationError(
-            (f'Недопустимые символы <{value}> в имени пользователя.'),
-            params={'value': value},
+            (f"Недопустимые символы <{value}> в имени пользователя."),
+            params={"value": value},
         )
 
 
 def validate_year(value):
     now = timezone.now().year
     if value > now:
-        raise ValidationError(
-            f'Год {value} не может быть больше {now}'
-        )
+        raise ValidationError(f"Год {value} не может быть больше {now}")
