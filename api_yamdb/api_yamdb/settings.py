@@ -1,16 +1,14 @@
+import os
 from datetime import timedelta
 
-import environ
-import os
+from dotenv import load_dotenv
 
-env = environ.Env()
-environ.Env.read_env()
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY',
-                 default='django-insecure-5&0@zr1-0!8&*%4f1=+&h&^7f^1^_&-7z!6+8*9vy^-z@-0hn')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
