@@ -7,27 +7,22 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "bio",
-            "role",
-        )
+        exclude = [
+            'id', 'password', 'last_login', 'is_superuser', 'is_staff',
+            'is_active', 'date_joined', 'confirmation_code',
+            'groups', 'user_permissions'
+        ]
 
 
 class UserNotAdminSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "bio",
-            "role",
-        )
+        exclude = [
+            'id', 'password', 'last_login', 'is_superuser', 'is_staff',
+            'is_active', 'date_joined', 'confirmation_code',
+            'groups', 'user_permissions'
+        ]
         read_only_fields = ("role",)
 
 
@@ -41,10 +36,6 @@ class TokenSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("email", "username")
-
     def to_internal_value(self, data):
         email = data.get("email")
         username = data.get("username")
@@ -55,21 +46,24 @@ class SignUpSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(data)
 
+    class Meta:
+        model = User
+        fields = ("email", "username")
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        # не было
-        exclude = ("id",)
-        # fields = '__all__' - не надо
         lookup_field = "slug"
+        fields = ("name", "slug")
 
 
 class GenreSerializer(serializers.ModelSerializer):
+
     class Meta:
-        exclude = ("id",)
         model = Genre
         lookup_field = "slug"
+        fields = ("name", "slug")
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):

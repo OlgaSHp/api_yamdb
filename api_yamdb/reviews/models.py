@@ -57,7 +57,7 @@ class User(AbstractUser):
         return self.role == MODERATOR
 
     class Meta:
-        ordering = ("id",)
+        ordering = ("username",)
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
@@ -78,6 +78,7 @@ class Category(models.Model):
     slug = models.SlugField("Слаг категории", unique=True, db_index=True)
 
     class Meta:
+        ordering = ("name",)
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
 
@@ -90,6 +91,7 @@ class Genre(models.Model):
     slug = models.SlugField("Слаг жанра", unique=True, db_index=True)
 
     class Meta:
+        ordering = ("name",)
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
 
@@ -116,6 +118,7 @@ class Title(models.Model):
     )
 
     class Meta:
+        ordering = ("name", "year")
         verbose_name = "Произведение"
         verbose_name_plural = "Произведения"
 
@@ -158,7 +161,7 @@ class Review(models.Model):
                 name="unique review",
             )
         ]
-        ordering = ("pub_date",)
+        ordering = ("-pub_date",)
 
     def __str__(self):
         return self.text
@@ -183,6 +186,7 @@ class Comment(models.Model):
     )
 
     class Meta:
+        ordering = ("-pub_date",)
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
 

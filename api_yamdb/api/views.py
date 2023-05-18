@@ -32,6 +32,8 @@ from .serializers import (
     UsersSerializer,
 )
 
+from .consts import (EMAIL_BODY_TEMPLATE, EMAIL_SUBJECT)
+
 
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -148,18 +150,17 @@ class APISignup(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data
-        # Если пользователь не был найден, сохраняем его
-        if not hasattr(user, "id"):
+        # Если validated_data не является объектом User, сохраняем его
+        if not isinstance(user, User):
             user = serializer.save()
 
-        email_body = (
-            f"Добрый день {user.username}."
-            f"\nВаш код для доступа к API: {user.confirmation_code}"
-        )
+        email_body = EMAIL_BODY_TEMPLATE.format(user.username,
+                                                user.confirmation_code
+                                                )
         data = {
             "email_body": email_body,
             "to_email": user.email,
-            "email_subject": "Код подтверждения для доступа к API",
+            "email_subject": EMAIL_SUBJECT,
         }
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)

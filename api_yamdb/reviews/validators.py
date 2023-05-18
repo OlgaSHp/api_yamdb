@@ -5,9 +5,12 @@ from django.utils import timezone
 
 
 def validate_username(value):
-    if value == "me":
+    if value.lower() == "me":
         raise ValidationError(
-            ("Имя пользователя не может быть <me>."),
+            (
+                "Имя пользователя не может быть равно "
+                "значениям: <me>, <Me>, <ME>, <mE>"
+            ),
             params={"value": value},
         )
     if re.search(r"^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$", value) is None:
